@@ -7,7 +7,6 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "@turf/turf": "^7.3.4",
     "axios": "^1.6.8",
     "express": "^4.19.2"
   }
