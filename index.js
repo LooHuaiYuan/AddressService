@@ -48,10 +48,10 @@ app.all('/generate-polygon', async (req, res) => {
             // Randomize angle within the segment to distribute points around the circle
             const angle = angleStep * i + (Math.random() * angleStep * 0.8);
 
-            // Randomize distance for each point (between 0.0020 and 0.0050 degrees)
-            // This makes the region cover a neighborhood rather than just a building
-            const distanceLat = 0.0020 + Math.random() * 0.0030;
-            const distanceLng = 0.0020 + Math.random() * 0.0040;
+            // Randomize distance for each point (between 0.0050 and 0.0150 degrees)
+            // This makes the region cover a larger neighborhood/district
+            const distanceLat = 0.0050 + Math.random() * 0.0080;
+            const distanceLng = 0.0050 + Math.random() * 0.0100;
 
             const latOffset = Math.sin(angle) * distanceLat;
             const lngOffset = Math.cos(angle) * distanceLng;
