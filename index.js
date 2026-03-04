@@ -39,42 +39,54 @@ app.all('/generate-polygon', async (req, res) => {
         const centerLat = parseFloat(response.data[0].lat);
         const centerLng = parseFloat(response.data[0].lon);
 
-        // 2. Generate a randomized polygon completely surrounding the center
-        const numPoints = Math.floor(Math.random() * 6) + 5; // Generate 5 to 10 vertices
-        const polygon = [];
-        const angleStep = (2 * Math.PI) / numPoints;
+        const regions = [];
+        const numRegions = Math.floor(Math.random() * 3) + 3; // 3 to 5 regions
+        const riskLevels = ["low", "medium", "high"];
 
-        for (let i = 0; i < numPoints; i++) {
-            // Randomize angle within the segment to distribute points around the circle
-            const angle = angleStep * i + (Math.random() * angleStep * 0.8);
+        // Place the first region at the exact center
+        const centerPoints = [{ lat: centerLat, lng: centerLng }];
 
-            // Randomize distance for each point (between 0.0050 and 0.0150 degrees)
-            // This makes the region cover a larger neighborhood/district
-            const distanceLat = 0.0050 + Math.random() * 0.0080;
-            const distanceLng = 0.0050 + Math.random() * 0.0100;
-
-            const latOffset = Math.sin(angle) * distanceLat;
-            const lngOffset = Math.cos(angle) * distanceLng;
-
-            polygon.push({
-                lat: centerLat + latOffset,
-                lng: centerLng + lngOffset
+        // Generate offsets for the other regions
+        for (let r = 1; r < numRegions; r++) {
+            const angle = Math.random() * 2 * Math.PI;
+            // Ensure distance is around 0.0350-0.0550 to prevent overlap (max radius is ~0.0150)
+            const distLat = 0.0350 + Math.random() * 0.0200;
+            const distLng = 0.0350 + Math.random() * 0.0200;
+            centerPoints.push({
+                lat: centerLat + (Math.sin(angle) * distLat),
+                lng: centerLng + (Math.cos(angle) * distLng)
             });
         }
 
-        // Close the shape by repeating the first point
-        polygon.push(polygon[0]);
+        for (const pt of centerPoints) {
+            const numPoints = Math.floor(Math.random() * 6) + 5; // Generate 5 to 10 vertices
+            const polygon = [];
+            const angleStep = (2 * Math.PI) / numPoints;
 
-        // 3. Generate a random risk level
-        const riskLevels = ["low", "medium", "high"];
-        const randomRiskLevel = riskLevels[Math.floor(Math.random() * riskLevels.length)];
+            for (let i = 0; i < numPoints; i++) {
+                const angle = angleStep * i + (Math.random() * angleStep * 0.8);
+                const distanceLat = 0.0050 + Math.random() * 0.0080;
+                const distanceLng = 0.0050 + Math.random() * 0.0100;
+
+                polygon.push({
+                    lat: pt.lat + Math.sin(angle) * distanceLat,
+                    lng: pt.lng + Math.cos(angle) * distanceLng
+                });
+            }
+            polygon.push(polygon[0]);
+
+            regions.push({
+                risk_level: riskLevels[Math.floor(Math.random() * riskLevels.length)],
+                center: pt,
+                polygon_bounds: polygon
+            });
+        }
 
         res.json({
             input_address: address,
             resolved_address: response.data[0].display_name,
-            risk_level: randomRiskLevel,
             center: { lat: centerLat, lng: centerLng },
-            polygon_bounds: polygon
+            regions: regions
         });
 
     } catch (error) {

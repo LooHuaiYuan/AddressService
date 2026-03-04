@@ -64,52 +64,58 @@
 
                 const data = await response.json();
 
-                if (data.polygon_bounds) {
-                    // Convert API response {lat, lng} objects to Leaflet [lat, lng] arrays
-                    const regionCoords = data.polygon_bounds.map(p => [p.lat, p.lng]);
+                if (data.regions && data.regions.length > 0) {
+                    // Center map on the returned main center
+                    map.setView([data.center.lat, data.center.lng], 13);
+                    const allBounds = L.latLngBounds();
 
-                    // Center map on the returned center
-                    map.setView([data.center.lat, data.center.lng], 15);
+                    data.regions.forEach((region, index) => {
+                        // Convert API response {lat, lng} objects to Leaflet [lat, lng] arrays
+                        const regionCoords = region.polygon_bounds.map(p => [p.lat, p.lng]);
 
-                    // Determine color based on risk level
-                    let polygonColor = '#4f46e5'; // default blue-ish
-                    if (data.risk_level === 'low') polygonColor = '#22c55e'; // green
-                    else if (data.risk_level === 'medium') polygonColor = '#eab308'; // yellow
-                    else if (data.risk_level === 'high') polygonColor = '#ef4444'; // red
+                        // Determine color based on risk level
+                        let polygonColor = '#4f46e5'; // default blue-ish
+                        if (region.risk_level === 'low') polygonColor = '#22c55e'; // green
+                        else if (region.risk_level === 'medium') polygonColor = '#eab308'; // yellow
+                        else if (region.risk_level === 'high') polygonColor = '#ef4444'; // red
 
-                    // Create the polygon
-                    const polygon = L.polygon(regionCoords, {
-                        color: polygonColor,
-                        fillColor: polygonColor,
-                        fillOpacity: 0.25,
-                        weight: 2,
-                        smoothFactor: 1
-                    }).addTo(map);
-
-                    // Add a tooltip
-                    polygon.bindTooltip(`<strong>${data.input_address}</strong><br>Risk Level: <span style="text-transform: capitalize; color: ${polygonColor}; font-weight: bold;">${data.risk_level}</span>`, {
-                        permanent: false,
-                        direction: "top",
-                        className: "custom-tooltip"
-                    });
-
-                    // Add interactive effects
-                    polygon.on('mouseover', function (e) {
-                        this.setStyle({
-                            fillOpacity: 0.4,
-                            weight: 4
-                        });
-                    });
-
-                    polygon.on('mouseout', function (e) {
-                        this.setStyle({
+                        // Create the polygon
+                        const polygon = L.polygon(regionCoords, {
+                            color: polygonColor,
+                            fillColor: polygonColor,
                             fillOpacity: 0.25,
-                            weight: 2
+                            weight: 2,
+                            smoothFactor: 1
+                        }).addTo(map);
+
+                        // Add a tooltip
+                        polygon.bindTooltip(`<strong>${data.input_address} - Area ${index + 1}</strong><br>Risk Level: <span style="text-transform: capitalize; color: ${polygonColor}; font-weight: bold;">${region.risk_level}</span>`, {
+                            permanent: false,
+                            direction: "top",
+                            className: "custom-tooltip"
                         });
+
+                        // Add interactive effects
+                        polygon.on('mouseover', function (e) {
+                            this.setStyle({
+                                fillOpacity: 0.4,
+                                weight: 4
+                            });
+                        });
+
+                        polygon.on('mouseout', function (e) {
+                            this.setStyle({
+                                fillOpacity: 0.25,
+                                weight: 2
+                            });
+                        });
+
+                        // Extend bounds to encompass all polygons
+                        allBounds.extend(polygon.getBounds());
                     });
 
-                    // Zoom to Region
-                    map.fitBounds(polygon.getBounds(), { padding: [100, 100] });
+                    // Zoom to fit all generated regions
+                    map.fitBounds(allBounds, { padding: [50, 50] });
                 }
             } catch (error) {
                 console.error("Error fetching polygon from API:", error);
