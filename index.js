@@ -40,7 +40,7 @@ app.all('/generate-polygon', async (req, res) => {
         const centerLng = parseFloat(response.data[0].lon);
 
         // 2. Generate a randomized polygon completely surrounding the center
-        const numPoints = Math.floor(Math.random() * 4) + 5; // Generate 5 to 8 vertices
+        const numPoints = Math.floor(Math.random() * 6) + 5; // Generate 5 to 10 vertices
         const polygon = [];
         const angleStep = (2 * Math.PI) / numPoints;
 
