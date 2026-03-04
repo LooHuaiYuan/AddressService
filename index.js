@@ -11,8 +11,9 @@ app.use((req, res, next) => {
     next();
 });
 
-app.post('/generate-polygon', async (req, res) => {
-    const { address } = req.body;
+app.all('/generate-polygon', async (req, res) => {
+    // Support either query parameter (?address=...) or JSON body
+    const address = req.query.address || req.body.address;
 
     if (!address) {
         return res.status(400).json({ error: "Address is required" });

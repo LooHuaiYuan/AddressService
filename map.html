@@ -55,15 +55,12 @@
         // Fetch polygon data from the deployed service
         async function fetchPolygon() {
             try {
-                const response = await fetch('https://address-service-six.vercel.app/generate-polygon', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        address: "Alexanderstraße 15, 10178 Berlin, Germany"
-                    })
-                });
+                // Get the address from the map.html URL (e.g., map.html?address=Hamburg)
+                const urlParams = new URLSearchParams(window.location.search);
+                const addressParams = urlParams.get('address') || "Alexanderstraße 15, 10178 Berlin, Germany";
+
+                // Call the API with the address as a query parameter
+                const response = await fetch(`https://address-service-six.vercel.app/generate-polygon?address=${encodeURIComponent(addressParams)}`);
 
                 const data = await response.json();
 
