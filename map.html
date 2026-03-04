@@ -74,17 +74,23 @@
                     // Center map on the returned center
                     map.setView([data.center.lat, data.center.lng], 15);
 
+                    // Determine color based on risk level
+                    let polygonColor = '#4f46e5'; // default blue-ish
+                    if (data.risk_level === 'low') polygonColor = '#22c55e'; // green
+                    else if (data.risk_level === 'medium') polygonColor = '#eab308'; // yellow
+                    else if (data.risk_level === 'high') polygonColor = '#ef4444'; // red
+
                     // Create the polygon
                     const polygon = L.polygon(regionCoords, {
-                        color: '#4f46e5',
-                        fillColor: '#4f46e5',
+                        color: polygonColor,
+                        fillColor: polygonColor,
                         fillOpacity: 0.25,
                         weight: 2,
                         smoothFactor: 1
                     }).addTo(map);
 
                     // Add a tooltip
-                    polygon.bindTooltip(`<strong>${data.input_address}</strong><br>Generated Polygon`, {
+                    polygon.bindTooltip(`<strong>${data.input_address}</strong><br>Risk Level: <span style="text-transform: capitalize; color: ${polygonColor}; font-weight: bold;">${data.risk_level}</span>`, {
                         permanent: false,
                         direction: "top",
                         className: "custom-tooltip"

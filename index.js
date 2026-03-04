@@ -59,9 +59,14 @@ app.post('/generate-polygon', async (req, res) => {
         // Close the shape by repeating the first point
         polygon.push(polygon[0]);
 
+        // 3. Generate a random risk level
+        const riskLevels = ["low", "medium", "high"];
+        const randomRiskLevel = riskLevels[Math.floor(Math.random() * riskLevels.length)];
+
         res.json({
             input_address: address,
             resolved_address: response.data[0].display_name,
+            risk_level: randomRiskLevel,
             center: { lat: centerLat, lng: centerLng },
             polygon_bounds: polygon
         });
